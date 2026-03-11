@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from abc import ABC, abstractmethod
-from typing import Any, List, Type
+from typing import Any, List, Type, Union
 
 
 class DataProcessorUtils:
@@ -131,6 +131,8 @@ class LogProcessor(DataProcessor):
             return False
         log_level = log_split[0]
         log_message = log_split[1]
+        if log_message.split() == []:
+            return False
         return (
             log_level in self.__log_levels
             and log_message != ""
@@ -147,7 +149,10 @@ class LogProcessor(DataProcessor):
         return f"{output_marker} {log_level} level detected: {log_message}"
 
 
-def validate_numeric_data(processor: NumericProcessor, data: List[int]) -> None:
+def validate_numeric_data(
+        processor: NumericProcessor,
+        data: List[int]
+) -> None:
     if processor.validate(data):
         print("Validation: Numeric data verified")
     else:
@@ -223,7 +228,7 @@ def main() -> None:
 
     print("\n=== Polymorphic Processing Demo ===\n")
 
-    data_list: List[List[int] | str] = [
+    data_list: List[Union[List[int], str]] = [
         [1, 2, 3],
         "Lorem ipsumm",
         "INFO: Quoicoubeh !"
@@ -232,7 +237,7 @@ def main() -> None:
 
     for data in data_list:
         processor: DataProcessor
-        
+
         for processor in [
             processors.get("log"),
             processors.get("text"),
