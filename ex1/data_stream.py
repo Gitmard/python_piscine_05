@@ -54,17 +54,17 @@ class SensorStream(DataStream):
 
     def can_handle(self, data: str) -> bool:
         splitted_data: List[str]
-        data_value_is_int: bool
+        data_value_is_float: bool
 
         if not super().can_handle(data):
             return False
         splitted_data = data.split(":")
         try:
-            int(splitted_data[1])
-            data_value_is_int = True
+            float(splitted_data[1])
+            data_value_is_float = True
         except ValueError:
-            data_value_is_int = False
-        return data_value_is_int
+            data_value_is_float = False
+        return data_value_is_float
 
 
 class TransactionStream(DataStream):
@@ -83,7 +83,7 @@ def test_sensor_stream_can_handle() -> None:
     print(" Testing can_handle method of SensorStream")
     stream = SensorStream(42)
     print(
-        " SensorStream should handle",
+        "=> SensorStream should handle",
         "[valid token]:[valid number]"
     )
     assert stream.can_handle("temp:42")
@@ -91,7 +91,15 @@ def test_sensor_stream_can_handle() -> None:
     assert stream.can_handle("pressure:42")
     print(" OK")
     print(
-        " SensorStream should not handle",
+        "=> SensorStream should handle",
+        "[valid token]:[valid float number]"
+    )
+    assert stream.can_handle("temp:42.42")
+    assert stream.can_handle("humidity:42.42")
+    assert stream.can_handle("pressure:42.42")
+    print(" OK")
+    print(
+        "=> SensorStream should not handle",
         "[valid token]:[invalid number]"
     )
     assert not stream.can_handle("temp:abc")
@@ -99,13 +107,13 @@ def test_sensor_stream_can_handle() -> None:
     assert not stream.can_handle("pressure:abc")
     print(" OK")
     print(
-        " SensorStream should not handle",
+        "=> SensorStream should not handle",
         "[invalid token]:[valid number]"
     )
     assert not stream.can_handle("abc:42")
     print(" OK")
     print(
-        " SensorStream should not handle",
+        "=> SensorStream should not handle",
         "[invalid token]:[invalid number]"
     )
     assert not stream.can_handle("abc:abc")
