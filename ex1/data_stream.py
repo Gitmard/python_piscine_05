@@ -95,8 +95,8 @@ class SensorStream(DataStream):
 
     stream_type: str = "Environmental Data"
 
-    def __init__(self) -> None:
-        super().__init__("SENSOR", keys=[
+    def __init__(self, stream_id: str = "SENSOR") -> None:
+        super().__init__(stream_id=stream_id, keys=[
             "temp",
             "humidity",
             "pressure"
@@ -163,8 +163,8 @@ class TransactionStream(DataStream):
 
     stream_type: str = "Financial Data"
 
-    def __init__(self) -> None:
-        super().__init__("TRANSACTION", [
+    def __init__(self, stream_id: str = "TRANSACTION") -> None:
+        super().__init__(stream_id=stream_id, keys=[
             "buy",
             "sell"
         ])
@@ -224,8 +224,10 @@ class TransactionStream(DataStream):
 
 class EventStream(DataStream):
 
-    def __init__(self) -> None:
-        super().__init__("EVENT", [
+    stream_type: str = "System Events"
+
+    def __init__(self, stream_id: str = "EVENT") -> None:
+        super().__init__(stream_id=stream_id, keys=[
             "login",
             "error",
             "logout"
@@ -283,6 +285,7 @@ class StreamProcessor:
         high_priority: bool = False
     ) -> Dict[str, Union[str, int, float]]:
         criteria: Optional[str] = None
+        batch: List[Any]
 
         stream.reset_stats()
         batch = self.__batches.get(stream.stream_id)
@@ -304,7 +307,6 @@ class StreamProcessor:
         streams: List[DataStream],
         high_priority: bool = False
     ) -> Dict[str, Dict[str, Union[str, int, float]]]:
-
         batch: List[Any]
         filtered_batch: List[Any]
         stats: Dict[str, Dict[str, Union[str, int, float]]] = {}
@@ -892,10 +894,6 @@ def event_stream_demo() -> None:
         f"Event analysis: {stats['total_events']} events,",
         f"{stats['error_count']} error detected"
     )
-
-
-"""
-"""
 
 
 def polymorphic_stream_processor_demo() -> None:

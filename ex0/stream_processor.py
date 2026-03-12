@@ -20,7 +20,7 @@ class DataProcessorUtils:
 
 class DataProcessor(ABC):
 
-    def __init__(_) -> None:
+    def __init__(self) -> None:
         super().__init__()
 
     @abstractmethod
@@ -37,7 +37,7 @@ class DataProcessor(ABC):
 
 class NumericProcessor(DataProcessor):
 
-    def __init__(_) -> None:
+    def __init__(self) -> None:
         super().__init__()
         print("Initializing Numeric Processor...")
 
@@ -70,7 +70,7 @@ class NumericProcessor(DataProcessor):
 
 class TextProcessor(DataProcessor):
 
-    def __init__(_) -> None:
+    def __init__(self) -> None:
         super().__init__()
         print("Initializing Text Processor...")
 
@@ -106,7 +106,7 @@ class LogProcessor(DataProcessor):
         "ERROR"
     ]
 
-    def __init__(_) -> None:
+    def __init__(self) -> None:
         super().__init__()
         print("Initializing Log Processor...")
 
