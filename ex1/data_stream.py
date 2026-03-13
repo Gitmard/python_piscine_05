@@ -517,7 +517,7 @@ def test_transaction_stream_process_batch() -> None:
     assert stats["total_operations"] == 5, \
         f"Expected total_operations=5, got {stats['total_operations']}"
     assert stats["net_flow"] == "+150", \
-        f"Expected net_flow=\"+125\", got \"{stats['net_flow']}\""
+        f"Expected net_flow=\"+150\", got \"{stats['net_flow']}\""
     print(" OK")
     print("=> process_batch should raise ValueError on invalid data")
     try:
@@ -885,7 +885,7 @@ def event_stream_demo() -> None:
         f"Type: {event_stream.stream_type}"
     )
     events_batch = ["login", "error", "logout"]
-    print(f"Processing transaction batch: {events_batch}")
+    print(f"Processing events batch: {events_batch}")
     processor.add_batch([event_stream.stream_id], events_batch)
     stats: Dict[str, Union[str, int, float]] = processor.process_stream(
         event_stream
@@ -901,9 +901,9 @@ def polymorphic_stream_processor_demo() -> None:
     print("\n=== Polymorphic Stream Processing ===")
     print("Processing mixed stream types through unified interface...")
 
-    sensor_stream = SensorStream()
-    transaction_stream = TransactionStream()
-    event_stream = EventStream()
+    sensor = SensorStream()
+    transaction = TransactionStream()
+    event = EventStream()
 
     mixed_batch: List[str] = [
         "buy:1312",
@@ -918,52 +918,44 @@ def polymorphic_stream_processor_demo() -> None:
     ]
 
     processor.add_batch([
-        sensor_stream.stream_id,
-        transaction_stream.stream_id,
-        event_stream.stream_id
+        sensor.stream_id,
+        transaction.stream_id,
+        event.stream_id
     ], mixed_batch)
 
     stats = processor.process_mixed_stream([
-        sensor_stream,
-        transaction_stream,
-        event_stream
+        sensor,
+        transaction,
+        event
     ])
     print(stats)
     print(" Batch 1 Results:")
-    print(f"- Sensor data: {stats[
-        sensor_stream.stream_id
-    ][
-        'total_readings'
-    ]} readings processed")
     print(
-        f"- Transaction data: {stats[
-            transaction_stream.stream_id
-        ][
-            'total_operations'
-        ]}",
+        f"- Sensor data: {stats[sensor.stream_id]['total_readings']}",
+        "readings processed"
+    )
+    print(
+        "- Transaction data:",
+        f"{stats[transaction.stream_id]['total_operations']}",
         "operations processed"
     )
-    print(f"- Event data: {stats[
-        event_stream.stream_id
-    ][
-        'total_events'
-    ]} events processed")
+    print(
+        f"- Event data: {stats[event.stream_id]['total_events']}",
+        "events processed"
+    )
 
     print("\nStream filtering active: High-priority data only")
     stats = processor.process_mixed_stream([
-        sensor_stream,
-        transaction_stream,
-        event_stream,
+        sensor,
+        transaction,
+        event,
     ], high_priority=True)
-    print(f"Filtered results: {stats[
-        sensor_stream.stream_id
-    ][
-        'total_readings'
-    ]} critical sensor alerts, {stats[
-        transaction_stream.stream_id
-    ][
-        'total_operations'
-    ]} large transaction")
+    print(
+        f"Filtered results: {stats[sensor.stream_id]['total_readings']}",
+        "critical sensor alerts,",
+        f"{stats[transaction.stream_id]['total_operations']}",
+        "large transaction"
+    )
 
 
 def stream_processor_demo() -> None:

@@ -64,7 +64,7 @@ class NumericProcessor(DataProcessor):
         data_avg = splitted_result[2]
         return (
             f"Processed {data_len} numeric values, sum={data_sum}," +
-            f"avg={data_avg}"
+            f" avg={data_avg}"
         )
 
 
@@ -175,18 +175,18 @@ def validate_log_data(processor: LogProcessor, data: str) -> None:
 
 def test_processor(
     data: Any,
-    type: str,
+    data_type: str,
     processor: DataProcessor
 ) -> None:
     print(f"Processing data: {data}")
-    if type == "text":
+    if data_type == "text":
         validate_text_data(processor, data)
-    elif type == "numeric":
+    elif data_type == "numeric":
         validate_numeric_data(processor, data)
-    elif type == "log":
+    elif data_type == "log":
         validate_log_data(processor, data)
     else:
-        raise ValueError(f"Invalid data type: {type}")
+        raise ValueError(f"Invalid data type: {data_type}")
     print(
         "Output:",
         processor.format_output(
@@ -231,10 +231,12 @@ def main() -> None:
     data_list: List[Union[List[int], str]] = [
         [1, 2, 3],
         "Lorem ipsumm",
-        "INFO: Quoicoubeh !"
+        "INFO: Quoicoubeh !",
     ]
     i = 1
 
+    print("Processing multiple data types through same interface...")
+    found_capable_processor = False
     for data in data_list:
         processor: DataProcessor
 
@@ -244,16 +246,20 @@ def main() -> None:
             processors.get("numeric")
         ]:
             if processor.validate(data):
+                found_capable_processor = True
                 break
-        print(
-            f"Result {i}:",
-            processor.format_output(
-                processor.process(
-                    data
+        if found_capable_processor:
+            print(
+                f"Result {i}:",
+                processor.format_output(
+                    processor.process(
+                        data
+                    )
                 )
             )
-        )
-        i += 1
+            i += 1
+        else:
+            raise ValueError(f"No processor can process data {data}")
 
     print("\nFoundation systems online. Nexus ready for advanced streams.")
 

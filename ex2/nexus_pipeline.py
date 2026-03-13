@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from abc import ABC, abstractmethod
-from typing import Dict, List, Protocol, Any, TypedDict, NotRequired
+from typing import Dict, List, Protocol, Any, TypedDict, Union
 
 
 class ProcessingStagePayload(TypedDict):
@@ -33,16 +33,16 @@ class ProcessingStageMetadata(TypedDict):
 
 
 class SensorProcessingStageMetadata(ProcessingStageMetadata):
-    temperature_range: NotRequired[str]
+    temperature_range: str
 
 
 class UserActivityProcessingStageMetadata(ProcessingStageMetadata):
-    actions_count: NotRequired[int]
+    actions_count: int
 
 
 class SensorListProcessingStageMetadata(ProcessingStageMetadata):
-    readings_count: NotRequired[int]
-    avg_temp: NotRequired[float]
+    readings_count: int
+    avg_temp: float
 
 
 class ProcessingStageDict(TypedDict):
@@ -211,9 +211,10 @@ class OutputStage:
         metadata: UserActivityProcessingStageMetadata = data[
             "metadata"
         ]  # pyright: ignore[reportAssignmentType]
-        return f"User activity logged: {
-            metadata.get('actions_count')
-        } actions processed"
+        return (
+            f"User activity logged: {metadata.get('actions_count')}" +
+            " actions processed"
+        )
 
     def __process_sensor_data(
         self,
@@ -239,13 +240,11 @@ class OutputStage:
         metadata: SensorListProcessingStageMetadata = data[
             "metadata"
         ]  # pyright: ignore[reportAssignmentType]
-        return f"Stream summary: {
-            metadata.get('readings_count')
-        } readings, avg: {
-            (metadata.get('avg_temp') or 0):.1f
-        }°{
-            payload['readings'][0]['unit']
-        }"
+        return (
+            f"Stream summary: {metadata.get('readings_count')} readings," +
+            f" avg: {(metadata.get('avg_temp') or 0):.1f}°" +
+            f" {payload['readings'][0]['unit']}"
+        )
 
     def process(self, data: ProcessingStageDict) -> str:
         if data["type"] == "sensor":
@@ -264,20 +263,20 @@ class ProcessingPipeline(ABC):
 
     def __init__(self, pipeline_id: str = "PIPELINE") -> None:
         ProcessingPipeline.__static_last_id += 1
-        self.pipeline_id = f"{pipeline_id}_{
-            ProcessingPipeline.__static_last_id:03
-        }"
+        self.pipeline_id = (
+            f"{pipeline_id}_" +
+            f"{ProcessingPipeline.__static_last_id:03}"
+        )
         self.stages = []
-        pass
 
     def add_stage(self, stage: ProcessingStage) -> None:
         self.stages.append(stage)
 
     @abstractmethod
-    def process(self, data: Any) -> Any:
+    def process(self, data: Any) -> Union[str, Any]:
         pass
 
-    def _is_processed(self, data: Any) -> Any:
+    def _is_processed(self, data: Any) -> bool:
         if not isinstance(data, Dict):
             return False
         if not data.get("type"):
@@ -384,7 +383,7 @@ class JSONAdapter(ProcessingPipeline):
         adapted_data["metadata"] = {}
         return adapted_data
 
-    def process(self, data: Any) -> Any:
+    def process(self, data: Any) -> Union[str, Any]:
         if not self._is_processed(data):
             data = self.__adapt_data(data)
         result = data
@@ -421,7 +420,7 @@ class CSVAdapter(ProcessingPipeline):
         adapted_data["metadata"] = metadata
         return adapted_data
 
-    def process(self, data: Any) -> ProcessingStageDict:
+    def process(self, data: Any) -> Union[str, Any]:
         if not self._is_processed(data):
             data = self.__adapt_data(data)
         result = data
@@ -455,7 +454,7 @@ class StreamAdapter(ProcessingPipeline):
             adapted_data["payload"]["readings"].append(sensor)  # type: ignore
         return adapted_data
 
-    def process(self, data: Any) -> ProcessingStageDict:
+    def process(self, data: Any) -> Union[str, Any]:
         if not self._is_processed(data):
             data = self.__adapt_data(data)
         result = data
@@ -506,8 +505,8 @@ class NexusManager:
             data: Any
     ) -> Any:
         pipelines: List[ProcessingPipeline] = []
-        for id in pipeline_ids:
-            pipelines.append(self.get_pipeline_by_id(id))
+        for pipeline_id in pipeline_ids:
+            pipelines.append(self.get_pipeline_by_id(pipeline_id))
         result = data
         for pipeline in pipelines:
             try:
