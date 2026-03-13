@@ -7,7 +7,7 @@ from typing import Any, List, Type, Union
 class DataProcessorUtils:
 
     @staticmethod
-    def isinstance_lst(lst: List[Any], expected_type: Type) -> bool:
+    def isinstance_lst(lst: List[Any], expected_type: Type[Any]) -> bool:
         for el in lst:
             if not isinstance(el, expected_type):
                 return False
